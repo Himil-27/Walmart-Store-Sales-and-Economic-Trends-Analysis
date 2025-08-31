@@ -1,1 +1,157 @@
+--------------------- (1). CHECK DATATYPE OF EACH COLUMN
+						
+
+						SELECT COLUMN_NAME, DATA_TYPE 
+						FROM INFORMATION_SCHEMA.COLUMNS 
+						WHERE TABLE_NAME = 'WALLMART_2'
+
+						-- CONVERT:
+						 -- DATE TO DATE
+						 -- WEEKLY_SALES TO INT OR FLOAT
+						 -- HOLIDAY_FLAG TO INT OR BOOL
+						 -- TEMPERATURE TO INT OR FLOAT
+						 -- FUEL PRICE TO INT OR FLOAT
+						 -- CPI TO FLOAT
+						 -- UNEMPLOYMENT TO FLOAT
+
+
+--------------------- DISTINCT VALUES
+						SELECT DISTINCT DATE FROM WALLMART_2
+
+
+--------------------------- CONVERTING DATATYPES
+
+------------------ (1). DATE TO DATE
+						
+						ALTER TABLE WALLMART_2   
+						ALTER COLUMN DATE DATE    -- CONVERTING DIRECTLY
+
+						-- ERROR: "Conversion failed when converting date and/or time from character string"
+						-- This means that SQL Server cannot convert some date-values in DATE column to a proper DATE type.
+						-- FOLLOW THIS FIVE-STEP PROCESS:
+					
+						----------- STEP-1: IDENTIFYING SUCH VALUES
+							SELECT DATE 
+							FROM WALLMART_2
+							WHERE ISDATE(DATE)=0
+
+						----------- STEP-2: CONVERTING SUCH VALUES TO DD-MM-YYYY FORMAT USING (TRY_CONVERT)
+							SELECT TRY_CONVERT(DATE, DATE, 105)
+							FROM WALLMART_2
+						
+						----------- STEP-3: CHECKING VALUES THAT WERENT CONVERTED (ALL WERE CONVERTED) 
+							SELECT TRY_CONVERT(DATE, DATE, 105) 
+							FROM WALLMART_2
+							WHERE TRY_CONVERT(DATE, DATE, 105) IS NULL
+
+						----------- STEP-4: UPDATING DATE TO 105 FORMAT (USING CONVERT)
+							UPDATE WALLMART_2 SET DATE = CONVERT(DATE, DATE, 105)
+
+						
+						----------- STEP-5: NOW CONVERTING TO DATE-FORMAT
+							ALTER TABLE WALLMART_2
+							ALTER COLUMN DATE DATE
+				 
+------------------ (2). WEEKLY_SALES TO FLOAT
+				
+					ALTER TABLE WALLMART_2
+					ALTER COLUMN WEEKLY_SALES FLOAT
+
+					SELECT COLUMN_NAME, DATA_TYPE 
+					FROM INFORMATION_SCHEMA.COLUMNS 
+					WHERE TABLE_NAME = 'WALLMART_2'
+
+
+------------------ (3). HOLIDAY_FLAG TO INT 
+					
+					ALTER TABLE WALLMART_2
+					ALTER COLUMN HOLIDAY_FLAG INT
+					
+					
+------------------ (4). TEMPERATURE TO FLOAT 
+					
+					ALTER TABLE WALLMART_2
+					ALTER COLUMN TEMPERATURE FLOAT
+
+------------------ (5). FUEL_PRICE TO FLOAT 
+					
+					ALTER TABLE WALLMART_2
+					ALTER COLUMN FUEL_PRICE FLOAT
+
+------------------ (6). CPI TO FLOAT 
+					SELECT DISTINCT CPI FROM WALLMART_2
+
+					ALTER TABLE WALLMART_2
+					ALTER COLUMN CPI FLOAT
+
+------------------ (7). UNEMPLOYMENT TO FLOAT 
+					SELECT DISTINCT UNEMPLOYMENT FROM WALLMART_2
+
+					ALTER TABLE WALLMART_2
+					ALTER COLUMN UNEMPLOYMENT FLOAT
+
+------------------ (8). STORE TO INT () 
+					-- Storing it as INT will:
+						-- Use less space than VARCHAR.
+						-- Allow numeric filtering, sorting, and joins to be faster and more efficient.
+						-- Be semantically correct (because store numbers are quantitative identifiers, not text).
+
+					ALTER TABLE WALLMART_2
+					ALTER COLUMN STORE INT
+
+
+--------------------- (2). CHECK MISSING OR BLANK VALUES
+					
+------------------------- (A). NULL VALUES (NONE FOUND)
+							SELECT 
+								SUM(CASE WHEN STORE IS NULL THEN 1 ELSE 0 END) AS 'STORE_NULL',
+								SUM(CASE WHEN WEEKLY_SALES IS NULL THEN 1 ELSE 0 END) AS 'WEEKLY_SALES_NULL',
+								SUM(CASE WHEN HOLIDAY_FLAG IS NULL THEN 1 ELSE 0 END) AS 'HOLIDAY_FLAG_NULL',
+								SUM(CASE WHEN TEMPERATURE IS NULL THEN 1 ELSE 0 END) AS 'TEMPERATURE_NULL',
+								SUM(CASE WHEN FUEL_PRICE IS NULL THEN 1 ELSE 0 END) AS 'FUEL_PRICE_NULL',
+								SUM(CASE WHEN CPI IS NULL THEN 1 ELSE 0 END) AS 'CPI_NULL',
+								SUM(CASE WHEN UNEMPLOYMENT IS NULL THEN 1 ELSE 0 END) AS 'UNEMPLOYMENT_NULL'
+							FROM WALLMART_2
+
+------------------------- (B). BLANK VALUES (NONE FOUND)
+							SELECT 
+								SUM(CASE WHEN DATE = '' THEN 1 ELSE 0 END) AS 'DATE_NULL'
+							FROM WALLMART_2
+								
+
+
+--------------------- (3). CHECK DATE FORMATS (NO NEED)
+SELECT UPPER('Create additional date fields if needed, like Year and Month for trend analysis.')
+
+
+
+--------------------- (4). FILTER OR FIX ANY INVALID OR NEGATIVE SALES VALUES. (NONE FOUND)						
+
+						SELECT WEEKLY_SALES, FUEL_PRICE
+						FROM WALLMART_2
+						WHERE FUEL_PRICE <= 0 OR WEEKLY_SALES < 0
+
+
+--------------------- (5). CREATE ADDITIONAL DATE FIELDS LIKE YEAR AND MONTH. (DO MONTH_NAME IN POWER QUERY INSTEAD)
+
+					    ALTER TABLE WALLMART_2
+						ADD YEAR INT
+
+						UPDATE WALLMART_2
+						SET YEAR = DATEPART(YY, DATE)
+
+						SELECT COLUMN_NAME, DATA_TYPE 
+						FROM INFORMATION_SCHEMA.COLUMNS 
+						WHERE TABLE_NAME = 'WALLMART_2'
+
+
+--------------------- (6). CONVERT COLUMN NAMES TO UPPER CASE
+						
+						EXEC SP_RENAME 'WALLMART_2.FUEL_PRICE', 'FUEL_PRICE', 'COLUMN'
+						EXEC SP_RENAME 'WALLMART_2.CPI', 'CPI', 'COLUMN'
+						EXEC SP_RENAME 'WALLMART_2.UNEMPLOYMENT', 'UNEMPLOYMENT', 'COLUMN'
+					
+
+
+SELECT UPPER('Phase 3: SQL-Based Analysis')
 
